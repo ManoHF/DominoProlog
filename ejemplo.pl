@@ -18,20 +18,57 @@ main:-
 	jugar(T).
 
 jugar(1):-
+	nb_getval(tablero, Tab),
+	write("el tablero se ve así: "), write(Tab), nl,
 	nb_getval(fichas, Fichas),
 	nb_getval(tablero, [A|B]),
 	last(B, C),
 	write("tablero: "), write([A, C]), nl,
 	write("fichas: "), write(Fichas), nl,
-	tirar(),
-	nb_setval(miTurno, 0).
+	tirar(), nl,
+	jugar(0).
+
+jugar(0):-
+	nb_getval(tablero, Tab),
+	write("el tablero se ve así: "), write(Tab), nl,
+	write("¿Cuántas comió el oponente?"), nl,
+	read(N),
+	write("Escribe -1 si el oponente tiró en la cabeza, 0 si no tiró o 1 si tiró en la cola"), nl,
+	read(U),
+	oponenteTiro(N, U), nl,
+	jugar(1).
+
+oponenteTiro(N, 1):-
+	nb_getval(tablero, Tab),
+	write("¿Qué tiró el oponente? "), nl,
+	read(C),
+	combina(Tab,[C], NT),
+	nb_setval(tablero, NT),
+	nb_getval(numFichasOp, M),
+	NuevoNum = N + M - 1,
+	nb_setval(numFichasOp, NuevoNum).
+
+oponenteTiro(N, -1):-
+	nb_getval(tablero, Tab),
+	write("¿Qué tiró el oponente? "), nl,
+	read(C),
+	nb_setval(tablero, [C|Tab]),
+	nb_getval(numFichasOp, M),
+	NuevoNum = N + M - 1,
+	nb_setval(numFichasOp, NuevoNum).
+
+oponenteTiro(N, 0):-
+	nb_getval(numFichasOp, M),
+	NuevoNum = N + M,
+	nb_setval(numFichasOp, NuevoNum).
 
 tirar():-
 	nb_getval(fichas, Fichas),
-	nb_getval(tablero, [A|B]),
-	encontrar(Fichas, A, [], D),
+	nb_getval(tablero, [[A1|_]|B]),
+	encontrar(Fichas, A1, [], D),
 	last(B, L),
-	encontrar(Fichas, L, D, PF),
+	last(L, L1),
+	encontrar(Fichas, L1, D, PF),
 	((PF == [], comer(Fichas, 7));
 	(PF \= [],
 	write("Posibles tiros: "), write(PF), nl)).
@@ -40,23 +77,21 @@ tirar():-
 	% actualizar tablero
 
 
-encontrar([[A|B]|F], [H1|T1], C, PF):-
-	((A =:= H1; A =:= T1; B =:= H1; B =:= T1),
+encontrar([[A|B]|F], Val, C, PF):-
+	((A =:= Val; B =:= Val),
 	write("encontré: "), write([A|B]), nl,
 	combina(C, [[A|B]], N),
-	encontrar(F,[H1|T1], N, PF));
-	encontrar(F,[H1|T1], C, PF).
+	encontrar(F, Val, N, PF));
+	encontrar(F, Val, C, PF).
 
 encontrar([], _, PF, PF):- !.
 
 comer(A, L):-
-	write("come"), nl,
-	read(B), nl,
+	write("¿Qué ficha comiste?"), nl,
+	read(B),
 	nb_setval(fichas, [B|A]),
 	LN is L + 1,
 	nb_setval(numFichas, LN),
-	nb_getval(fichas, N),
-	nb_getval(numFichas, D),
 	tirar().
 
 len([], 0).
@@ -69,6 +104,9 @@ combina([], L, L):-
 	!.
 combina([X|L1], L2, [X|L3]):-
 	combina(L1, L2, L3).
+
+
+
 
 
 
