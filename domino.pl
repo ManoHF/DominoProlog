@@ -1,27 +1,57 @@
-
-ejemplo:-
-	nb_setval(lista, [1,2,3,4,5,6,7,8,9,0]),
-	nb_getval(lista, K),
-	write(K),
+ejemplo:- % ejemplo de como usar variables globales con nb_setvar(nombre, Valor).
+	nb_setval(lista, [1,2,3,4,5,6,7,8,9,0]), % se asigna [1,2,3,4,5,6,7,8,9,0] a la lista 1
+	nb_getval(lista, K), % se encuentra una K que sea el valor de lista
+	write(K), % K es [1,2,3,4,5,6,7,8,9,0]
 	nb_setval(lista, [28,2,3,4,5,6,7,8,9,0]). % el nuevo valor de tablero es [28,2,3,4,5,6,7,8,9,0]
+	nb_getval(lista, P), % se encuentra una P que sea el valor de lista
+	write(P), % P es [28,2,3,4,5,6,7,8,9,0]
 
-
+% aquí empieza el juego
 main:- 
 	nb_setval(numFichas, 7),
 	nb_setval(numFichasOp, 7),
-	nb_setval(tablero, [[1,2],[2,5],[5,0]]),
+	nb_setval(tablero, []), % el tablero empieza vací
 	nb_setval(miTurno, 1),
 	write("Ingresa tus fichas: "), nl,
 	read(A), nl,
 	nb_setval(fichas, A),
-	nb_getval(miTurno, T),
+	mula(A, 6, T), nl,
 	jugar(T).
+
+% encontrar la mula más alta y asigna el turno al otro
+mula(Fichas, N, T):- 
+	(	
+		(
+			buscar([N, N], Fichas), 
+			T is 0,
+			write("tu pusiste la mula de "), write([N,N]), write(": "), nl,
+			nb_setval(tablero, [[N,N], [N, N]])
+		);
+		(
+			write("Escribe 1 si el oponente puso la mula de "), write([N,N]), write(": "), nl,
+			read(Mula), Mula == 1,
+			T is 1,
+			write("la puso el oponente "), nl,
+			nb_setval(tablero, [[N,N], [N,N]])
+		)
+	);
+	(M is (N - 1), mula(Fichas, M, T)).
+
+mula(_, 0, _):- !.
+	
+
+buscar(X, [X|_]):-
+	!.
+buscar(X, [_|Z]):-
+	buscar(X, Z).	
 
 jugar(1):-
 	nb_getval(tablero, Tab),
 	write("el tablero se ve así: "), write(Tab), nl,
 	nb_getval(fichas, Fichas),
+	write(Fichas),
 	nb_getval(tablero, [A|B]),
+	write([A|B]),
 	last(B, C),
 	write("tablero: "), write([A, C]), nl,
 	write("fichas: "), write(Fichas), nl,
@@ -104,7 +134,6 @@ combina([], L, L):-
 	!.
 combina([X|L1], L2, [X|L3]):-
 	combina(L1, L2, L3).
-
 
 
 
