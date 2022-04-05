@@ -14,8 +14,6 @@ main:-
 	write("Ingresa tus fichas: "), nl,
 	read(A), nl,
 	nb_setval(fichas, A),
-	nb_getval(fichas, A),                  
-	write(A), nl,
 	nb_getval(miTurno, T),
 	jugar(T).
 
@@ -23,7 +21,7 @@ jugar(1):-
 	nb_getval(fichas, Fichas),
 	nb_getval(tablero, [A|B]),
 	last(B, C),
-	write([A, C]), nl,
+	write("tablero: "), write([A, C]), nl,
 	write("fichas: "), write(Fichas), nl,
 	tirar(),
 	nb_setval(miTurno, 0).
@@ -71,9 +69,6 @@ combina([], L, L):-
 	!.
 combina([X|L1], L2, [X|L3]):-
 	combina(L1, L2, L3).
-
-
-
 
 
 
