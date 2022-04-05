@@ -2,9 +2,9 @@ ejemplo:- % ejemplo de como usar variables globales con nb_setvar(nombre, Valor)
 	nb_setval(lista, [1,2,3,4,5,6,7,8,9,0]), % se asigna [1,2,3,4,5,6,7,8,9,0] a la lista 1
 	nb_getval(lista, K), % se encuentra una K que sea el valor de lista
 	write(K), % K es [1,2,3,4,5,6,7,8,9,0]
-	nb_setval(lista, [28,2,3,4,5,6,7,8,9,0]). % el nuevo valor de tablero es [28,2,3,4,5,6,7,8,9,0]
+	nb_setval(lista, [28,2,3,4,5,6,7,8,9,0]), % el nuevo valor de tablero es [28,2,3,4,5,6,7,8,9,0]
 	nb_getval(lista, P), % se encuentra una P que sea el valor de lista
-	write(P), % P es [28,2,3,4,5,6,7,8,9,0]
+	write(P). % P es [28,2,3,4,5,6,7,8,9,0]
 
 % aquí empieza el juego
 main:- 
