@@ -11,7 +11,7 @@ main:-
 	nb_setval(numFichasOp, 7),
 	nb_setval(tablero, [[1,2],[2,5],[5,0]]),
 	nb_setval(miTurno, 1),
-	write("ingresa tus fichas"), nl,
+	write("Ingresa tus fichas: "), nl,
 	read(A), nl,
 	nb_setval(fichas, A),
 	nb_getval(fichas, A),                  
@@ -24,29 +24,32 @@ jugar(1):-
 	nb_getval(tablero, [A|B]),
 	last(B, C),
 	write([A, C]), nl,
-	write(Fichas), nl,
-	tirar(Fichas, [A,C]),
+	write("fichas: "), write(Fichas), nl,
+	tirar(),
 	nb_setval(miTurno, 0).
 
-tirar(Fichas, [A|B]):-
-	tirarCabeza(Fichas, A, C, D),
-	% tirarCola(Fichas, B, D, PF),
-	write("Posibles tiros: "), write(D).
+tirar():-
+	nb_getval(fichas, Fichas),
+	nb_getval(tablero, [A|B]),
+	encontrar(Fichas, A, [], D),
+	last(B, L),
+	encontrar(Fichas, L, D, PF),
+	((PF == [], comer(Fichas, 7));
+	(PF \= [],
+	write("Posibles tiros: "), write(PF), nl)).
 
-tirarCabeza(A, H, C, PF):-
-	encontrar(A, H, C, PF).
+	% minimax con posibles tiros (encuentra la mejor pieza)
+	% actualizar tablero
+
 
 encontrar([[A|B]|F], [H1|T1], C, PF):-
-	write("cabeza: "), write([H1|T1]), nl,
-	write("fichas: "), write(F), nl,
-	(A =:= H1; A =:= T1; B =:= H1; B =:= T1),
+	((A =:= H1; A =:= T1; B =:= H1; B =:= T1),
 	write("encontré: "), write([A|B]), nl,
 	combina(C, [[A|B]], N),
-	write("FH: "), write(N), nl,
-	encontrar(F,[H1|T1], N, PF).
+	encontrar(F,[H1|T1], N, PF));
+	encontrar(F,[H1|T1], C, PF).
 
-encontrar([], _, PF, PF):- 
-	write(PF),!.
+encontrar([], _, PF, PF):- !.
 
 comer(A, L):-
 	write("come"), nl,
@@ -56,8 +59,7 @@ comer(A, L):-
 	nb_setval(numFichas, LN),
 	nb_getval(fichas, N),
 	nb_getval(numFichas, D),
-	write(N),
-	write(D).
+	tirar().
 
 len([], 0).
 len([_|A], L):-
@@ -69,7 +71,6 @@ combina([], L, L):-
 	!.
 combina([X|L1], L2, [X|L3]):-
 	combina(L1, L2, L3).
-
 
 
 
