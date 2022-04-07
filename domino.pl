@@ -9,7 +9,7 @@ main:-
 	nb_setval(fichasOp, [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[2,2],[2,3],[2,4],[2,5],[2,6],[3,3],[3,4],[3,5],[3,6],[4,4],[4,5],[4,6],[5,5],[5,6],[6,6]]),
 	nb_setval(numFichas, 7),
 	nb_setval(numFichasOp, 7),
-	nb_setval(tablero, []), % el tablero empieza vací
+	nb_setval(tablero, []), % el tablero empieza vacío
 	nb_setval(miTurno, 1),
 	write("Ingresa tus fichas: "), nl,
 	read(A), nl,
@@ -35,7 +35,10 @@ mula(Fichas, N, T):-
 			read(Mula), Mula == 1,
 			T is 1,
 			write("la puso el oponente "), nl,
-			nb_setval(tablero, [[N,N], [N,N]])
+			nb_setval(tablero, [[N,N], [N,N]]),
+			nb_getval(fichasOp, Op),
+			eliminar([N,N], Op, NOp),
+			nb_setval(fichasOp, NOp)
 		)
 	);
 	(M is (N - 1), mula(Fichas, M, T)).
@@ -69,6 +72,11 @@ jugar(0):-
 	oponenteTiro(N, U), nl,
 	jugar(1).
 
+oponenteTiro(N, 0):-
+	nb_getval(numFichasOp, M),
+	NuevoNum = N + M,
+	nb_setval(numFichasOp, NuevoNum).
+
 oponenteTiro(N, V):-
 	write("¿Qué tiró el oponente? "), nl,
 	read(F),
@@ -81,10 +89,6 @@ oponenteTiro(N, V):-
 	NuevoNum = (N + M - 1),
 	nb_setval(numFichasOp, NuevoNum).
 
-oponenteTiro(N, 0):-
-	nb_getval(numFichasOp, M),
-	NuevoNum = N + M,
-	nb_setval(numFichasOp, NuevoNum).
 
 acomodar(-1, F):- % acomodar en la cabeza
 	nb_getval(tablero, Tab),
@@ -96,14 +100,18 @@ acomodar(1, F):- % acomodar en la cola
 	nb_setval(tablero, NT).
 
 acomodar(2, F):-
-	nb_getval(tablero, [[A1|_]|B]),
-	cabeza(F, HF), last(F, TF),
-	last(B, TT), % cola del tablero.
-	HF =:= A1, write([TF,HF]),nl, acomodar(-1,[TF,A1]);
-	!.
+	nb_getval(tablero, [[HT|_]|B]),
+	cabeza(F, HF), last(F, TF), % Head Ficha y Tail Ficha
+	last(B, UF), last(UF, TT), % ultima ficha y Tail de la ultima ficha
+	((HF =:= HT, HF =:= TT, minimax(0));
+	(HF =:= HT, acomodar(-1,[TF,HF]));
+	(TF =:= HT, acomodar(-1, F));
+	(HF =:= TT, acomodar(1, F));
+	(TF =:= TT, acomodar(1, [TF,HF]))).
 
 
-
+minimax(0):-
+	write("MINIMAX").
 
 tirar():-
 	nb_getval(fichas, Fichas),
@@ -114,12 +122,20 @@ tirar():-
 	encontrar(Fichas, L1, D, PF), % PF es posibles fichas
 	((PF == [], 
 		comer(Fichas, 7));
-	(length(PF, 1), write("solo puedes tirar: "),
+	(length(PF, 1),
 	 	cabeza(PF, F), eliminar(F, Fichas, NuevasFichas), nb_setval(fichas, NuevasFichas), acomodar(2, F));
-	(write("Posibles tiros: "), write(PF), nl)).
+	(write("Posibles tiros: "), tirajug(Fichas), write(PF), nl)).
 
 	% minimax con posibles tiros (encuentra la mejor pieza)
 	% actualizar tablero
+
+tirajug(Fichas):-
+	write("Qué ficha quieres tirar?"), nl,
+	read(F),
+	eliminar(F, Fichas, NuevasFichas),
+	write(NuevasFichas),
+	nb_setval(fichas, NuevasFichas),
+	acomodar(2, F).
 
 encontrar([], _, PF, PF):- !.
 encontrar([[A|B]|F], Val, C, PF):-
@@ -137,7 +153,7 @@ comer(A, L):-
 	nb_getval(fichasOp, Op),
 	eliminar(F, Op, NOp),
 	nb_setval(fichasOp, NOp),
-	write("fichas que no han salido: "), write(NOp), nl,
+	write("fichas que no han salido: "), write(NOp), nl, nl,
 	LN is (L + 1),
 	nb_setval(numFichas, LN),
 	tirar().
