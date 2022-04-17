@@ -49,7 +49,7 @@ primerTiro(1, T):-
 	write("Ingresa la ficha que tiraste: "), nl,
 	read(F),
 	nb_setval(tablero, [F,F]),
-	nb_setval(numFichasOp, 6),
+	nb_setval(numFichas, 6),
 	nb_getval(fichas, Fichas),
 	eliminar(F, Fichas, NuevasFichas),
 	nb_setval(fichas, NuevasFichas),
@@ -69,10 +69,11 @@ jugar(0):-
 	write("Tienes "), write(Num), write(" fichas"), nl,
 	((Num < 1, write("GANASTE!!!!!!!! :)"), nl, !);
 	(nb_getval(tablero, Tab),
+	length(Tab, Len),
 	write("el tablero se ve así: "), nl,
-	write("------------------------------------------------"),nl,
+	write("--"), imprimirLinea(Len), write("--"), nl,
 	write("|"), write(Tab), write("|"), nl,
-	write("------------------------------------------------"), nl,
+	write("--"), imprimirLinea(Len), write("--"), nl,
 	nl, write("¿Cuántas comió el oponente?"), nl,
 	read(N),
 	write("Escribe -1 si el oponente tiró en la cabeza, 0 si pasó, o 1 si tiró en la cola"), nl,
@@ -91,10 +92,11 @@ jugar(1):-
 	write("El oponente tiene "), write(Num), write(" fichas"), nl,
 	((Num < 1, write("GANÓ EL OPONENTE!!!!!!!! :("), nl, !);
 	(nb_getval(tablero, Tab),
+	length(Tab, Len),
 	write("el tablero se ve así: "), nl,
-	write("------------------------------------------------"),nl,
+	write("--"), imprimirLinea(Len), write("--"), nl,
 	write("|"), write(Tab), write("|"), nl,
-	write("------------------------------------------------"),nl,
+	write("--"), imprimirLinea(Len), write("--"), nl,
 	nb_getval(fichas, Fichas),
 	nl, write("Tus fichas: "), write(Fichas), nl,
 	tirar(), nl,
@@ -117,13 +119,28 @@ oponenteTiro(N, 0):-
 oponenteTiro(N, V):-
 	write("¿Qué tiró el oponente? "), nl,
 	read(F),
-	acomodar(V, F),
+	cambiarFicha(F, V, NF),
+	acomodar(V, NF),
 	nb_getval(fichasOp, Op),
-	eliminar(F, Op, NOp),
+	eliminar(NF, Op, NOp),
 	nb_setval(fichasOp, NOp),
 	nb_getval(numFichasOp, M),
 	NuevoNum is (N + M - 1),
 	nb_setval(numFichasOp, NuevoNum).
+
+cambiarFicha(F, 1, NF):-
+	cabeza(F, HF), last(F, TF),
+	nb_getval(tablero, Tab),
+	last(Tab, Ult), last(Ult, TT),
+	((HF =:= TT, NF = F);
+		(NF = [TF, HF])).
+
+cambiarFicha(F, -1, NF):-
+	cabeza(F, HF), last(F, TF),
+	nb_getval(tablero, Tab),
+	cabeza(Tab, Prim), cabeza(Prim, HT),
+	((TF =:= HT, NF = F);
+		(NF =[TF, HF])).
 
 % acomodar(i, i): acomoda la ficha la cabeza o cola del tablero 
 
@@ -178,7 +195,7 @@ tirar:-
 		% nb_getval(numFichasOp, NumOp),
 		% Profundidad is Num + NumOp,
 		nb_getval(fichasOp, FichasOp),
-		podaAlfaBeta(Tablero, 4, FichasOp, Fichas, Fichas, 1, -10000,  10000, MejorTiro, Valor), 
+		podaAlfaBeta(Tablero, 3, FichasOp, Fichas, Fichas, 1, -10000,  10000, MejorTiro, Valor), 
 		write("Valor de la rama: "), write(Valor), nl,
 		write("MejorTiro: "), write(MejorTiro), nl,
 		eliminar(MejorTiro, Fichas, NuevasFichas), nb_setval(fichas, NuevasFichas),
@@ -201,7 +218,7 @@ comer(A, L):-
 	write("Escribe 1 si hay fichas para comer o 0 si ya se acabaron las fichas"), nl,
 	read(Valor),
 	((Valor =:= 0, write("Vas a pasar"), nl, jugar(0));
-	(write("¿Qué ficha comiste?"), nl, nl,
+	(write("¿Qué ficha comiste?"), nl,
 	read(F),
 	nb_setval(fichas, [F|A]),
 	nb_getval(fichasOp, Op),
@@ -396,4 +413,11 @@ eliminarLista([], L, L):- !.
 
 % cabeza(i,o): recibe una lista de la cual saca su cabeza y la devuelve como resultado
 cabeza([A|_], A).
+
+% impresión de guiones para el tablero
+imprimirLinea(0):- !.
+imprimirLinea(N):-
+	write("-----"),
+	NN is N - 1,
+	imprimirLinea(NN).
 
