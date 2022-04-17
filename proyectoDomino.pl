@@ -1,5 +1,11 @@
 
+% main: interfaz de inicio de juego
 
+% Inicializa el tablero en vacío
+% Inicializa las fichas que no han salido con tadas las fichas del juego
+% Inicializa número de fichas por jugador en 7
+% Asigna las fichas del jugador con una lista leída 
+% Elimina de la lista de fichas que no han salido (fichasOp) las fichas del jugador(fichas)
 main:- 
 	nb_setval(fichasOp, [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[2,2],[2,3],[2,4],[2,5],[2,6],[3,3],[3,4],[3,5],[3,6],[4,4],[4,5],[4,6],[5,5],[5,6],[6,6]]),
 	nb_setval(numFichas, 7),
@@ -11,69 +17,102 @@ main:-
 	nb_getval(fichasOp, Op),
 	eliminarLista(A, Op, NOp),
 	nb_setval(fichasOp, NOp),
-	write("Escribe 1 si el oponente inició el juego o 0 si tu lo iniciaste: "), nl,
+	write("Escribe 0 si el oponente inició el juego o 1 si tu lo iniciaste: "), nl,
 	read(Prim),
 	primerTiro(Prim, T),
 	nb_getval(tablero, Tab),
 	write(Tab), nl,
 	jugar(T).
 
-primerTiro(1, T):-
+% primerTiro(i, o): asigna el tiro inicial y cambia el jugador 
+
+% caso 0: cuando el oponente tira la primera ficha
+% Inicializa el tablero con la ficha dada
+% Actualiza las fichas que no han salido (fichasOp)
+% Resta 1 la cantidad de fichas del oponente (numFichasOp)
+primerTiro(0, T):-
 	write("Ingresa la ficha que tiró el oponente: "), nl,
 	read(F),
 	nb_setval(tablero, [F,F]),
 	nb_setval(numFichasOp, 6),
+	nb_getval(fichasOp, FichasOp),
+	eliminar(F, FichasOp, NuevasFichas),
+	nb_setval(fichasOp, NuevasFichas),
 	T is 1.
 
-primerTiro(0, T):-
+% caso 1: cuando el jugador tira la primera ficha
+% Inicializa el tablero con la ficha dada
+% Actualiza las fichas del jugador (fichas)
+% Resta 1 la cantidad de fichas del jugador (numFichas)
+primerTiro(1, T):-
 	write("Ingresa la ficha que tiraste: "), nl,
 	read(F),
 	nb_setval(tablero, [F,F]),
 	nb_setval(numFichasOp, 6),
+	nb_getval(fichas, Fichas),
+	eliminar(F, Fichas, NuevasFichas),
+	nb_setval(fichas, NuevasFichas),
 	T is 0.
 
+% jugar(i): interfaz de turno de jugador/oponente
 
-buscar(X, [X|_]):-
-	!.
-buscar(X, [_|Z]):-
-	buscar(X, Z).	
-
-jugar(1):-
+% caso 0: turno del oponente
+% Comprueba si el jugador ganó
+% Imprime el tablero
+% Pregunta si el oponente comió fichas
+% Pregunta si el oponente tiró en la cabeza o cola del tablero
+% Llama al predicado oponenteTiro(i, i)
+% Llama al predicado jugar(1) para cambiar de turno
+jugar(0):-
 	nb_getval(numFichas, Num),
+	write("Tienes "), write(Num), write(" fichas"), nl,
 	((Num < 1, write("GANASTE!!!!!!!! :)"), nl, !);
 	(nb_getval(tablero, Tab),
 	write("el tablero se ve así: "), nl,
-	write("-----------------------------------------"),nl,
+	write("------------------------------------------------"),nl,
 	write("|"), write(Tab), write("|"), nl,
-	write("-----------------------------------------"),nl,
-	nb_getval(fichas, Fichas),
-	nb_getval(tablero, [A|B]),
-	last(B, C),
-	nl, write("Primera y ultima ficha del tablero: "), write([A, C]), nl,
-	write("Tus fichas: "), write(Fichas), nl,
-	tirar(), nl,
-	jugar(0))).
-
-jugar(0):-
-	nb_getval(numFichasOp, Num),
-	((Num < 1, write("GANÓ EL OPONENTE!!!!!!!! :("), nl, !);
-	(nb_getval(tablero, Tab),
-	write("el tablero se ve así: "), nl,
-	write("-----------------------------------------"),nl,
-	write("|"), write(Tab), write("|"), nl,
-	write("-----------------------------------------"), nl,
-	write("¿Cuántas comió el oponente?"), nl,
+	write("------------------------------------------------"), nl,
+	nl, write("¿Cuántas comió el oponente?"), nl,
 	read(N),
 	write("Escribe -1 si el oponente tiró en la cabeza, 0 si pasó, o 1 si tiró en la cola"), nl,
 	read(U),
 	oponenteTiro(N, U), nl,
 	jugar(1))).
 
+% caso 1: turno del jugador
+% Comprueba si el oponente ganó
+% Imprime el tablero
+% Imprime fichas del jugador 
+% Llama al predicado tirar
+% Llama al predicado jugar(0) para cambiar de turno
+jugar(1):-
+	nb_getval(numFichasOp, Num),
+	write("El oponente tiene "), write(Num), write(" fichas"), nl,
+	((Num < 1, write("GANÓ EL OPONENTE!!!!!!!! :("), nl, !);
+	(nb_getval(tablero, Tab),
+	write("el tablero se ve así: "), nl,
+	write("------------------------------------------------"),nl,
+	write("|"), write(Tab), write("|"), nl,
+	write("------------------------------------------------"),nl,
+	nb_getval(fichas, Fichas),
+	nl, write("Tus fichas: "), write(Fichas), nl,
+	tirar(), nl,
+	jugar(0))).
+
+
+% oponenteTiro(i, i): actualiza el número de fichas del oponente y actualiza el tablero en caso de que el oponente haya tirado
+
+% Caso 0: Cuando el oponente no tira (pasa)
+% Actualiza el número de fichas del oponente
 oponenteTiro(N, 0):-
 	nb_getval(numFichasOp, M),
-	NuevoNum = N + M,
+	NuevoNum is N + M,
 	nb_setval(numFichasOp, NuevoNum).
 
+% Caso -1 y 1: Cuando el oponente tira una ficha en la cabeza(-1) o cola(1) del tablero
+% Pide la ficha que tiró el oponente
+% Llama al predicado acomodar(i, i) con la ficha tirada y el valor (-1 o 1)
+% Actualiza el número de fichas del oponente
 oponenteTiro(N, V):-
 	write("¿Qué tiró el oponente? "), nl,
 	read(F),
@@ -81,40 +120,45 @@ oponenteTiro(N, V):-
 	nb_getval(fichasOp, Op),
 	eliminar(F, Op, NOp),
 	nb_setval(fichasOp, NOp),
-	write("fichas que no han salido: "), write(NOp), nl,
 	nb_getval(numFichasOp, M),
-	NuevoNum = (N + M - 1),
+	NuevoNum is (N + M - 1),
 	nb_setval(numFichasOp, NuevoNum).
 
+% acomodar(i, i): acomoda la ficha la cabeza o cola del tablero 
 
-acomodar(-1, F):- % acomodar en la cabeza
+% Caso -1: acomoda la ficha (F) en la cabeza del tablero
+acomodar(-1, F):- 
 	nb_getval(tablero, Tab),
 	nb_setval(tablero, [F|Tab]).
 
-acomodar(1, F):- % acomodar en la cola
+% Caso 1: acomoda la ficha (F) en la cola del tablero
+acomodar(1, F):- 
 	nb_getval(tablero, Tab),
 	union(Tab,[F], NT),
 	nb_setval(tablero, NT).
 
+% Caso 2: Busca dónde se puede acomodar la ficha (F) y llama a acomodar() según corresponda
 acomodar(2, F):-
 	nb_getval(tablero, [[HT|_]|B]),
 	cabeza(F, HF), last(F, TF), % Head Ficha y Tail Ficha
 	last(B, UF), last(UF, TT), % ultima ficha y Tail de la ultima ficha
 	(
-		(HF =:= HT, HF =:= TT, minimax(0, F));
 		(HF =:= HT, acomodar(-1,[TF,HF]));
 		(TF =:= HT, acomodar(-1, F));
 		(HF =:= TT, acomodar(1, F));
 		(TF =:= TT, acomodar(1, [TF,HF])),!).
 
-
-minimax(0, F):-
-	write("FALTA HACER EL CASO EN QUE SE PONGA EN LOS DOS LADOS"),
-	acomodar(1, F).
-
+% tirar: interfaz de tiro del jugador
+% Llama al predicado encontrar(i, i, i, o) para encontrar los posibles tiros (PF)
+% - Llama al predicado comer(i, i) si la lista de posibles tiros (PF) está vacía
+% - Llama al predicado acomodar(2, F) si la lisya de posibles tiros (PF) tiene un único tiro posible
+% - Llama al predicado podaAlfaBeta(i,i,i,i,i,i,i,i,o,o) si la lista de posibles tiros (PF) tiene más de un elemento
+% Actualiza la cantidad de fichas del jugador (numFichas)
 tirar:-
 	nb_getval(fichas, Fichas),
 	nb_getval(tablero, [[A1|_]|B]),
+	nb_getval(numFichas, NumFichas),
+	NuevoNum is NumFichas - 1,
 	encontrar(Fichas, A1, [], D), % D es la lista de las fichas que se pueden acomodar en la cabeza
 	last(B, L),
 	last(L, L1),
@@ -122,41 +166,65 @@ tirar:-
 	((PF == [], 
 		comer(Fichas, 7));
 	(length(PF, 1),
-	 	cabeza(PF, F), eliminar(F, Fichas, NuevasFichas), nb_setval(fichas, NuevasFichas), acomodar(2, F));
+	 	cabeza(PF, F), 
+	 	eliminar(F, Fichas, NuevasFichas), 
+	 	nb_setval(fichas, NuevasFichas), 
+	 	acomodar(2, F), 
+	 	nb_setval(numFichas, NuevoNum));
 	(write("Posibles tiros: "), write(PF), nl,
 		nb_getval(tablero, Tablero),
 		% nb_getval(numFichas, Num),
 		% nb_getval(numFichasOp, NumOp),
 		% Profundidad is Num + NumOp,
 		nb_getval(fichasOp, FichasOp),
-		podaAlfaBeta(Tablero, 2, FichasOp, Fichas, Fichas, 1, -10000,  10000, MejorTiro, Valor), 
+		podaAlfaBeta(Tablero, 4, FichasOp, Fichas, Fichas, 1, -10000,  10000, MejorTiro, Valor), 
 		write("Valor de la rama: "), write(Valor), nl,
+		write("MejorTiro: "), write(MejorTiro), nl,
 		eliminar(MejorTiro, Fichas, NuevasFichas), nb_setval(fichas, NuevasFichas),
+		nb_setval(numFichas, NuevoNum),
 		acomodar(2, MejorTiro),!
 		)).
 
+% encontrar(i, i, i, o): Encuentra la lista de fichas que coinciden con el valor en la cabeza o cola del tablero (Val)
 
+% Caso base: cuando la lisat está vacía hace un corte
 encontrar([], _, PF, PF):- !.
+
+% [[A|B]|F]: lista de fichas del jugador
+% Val: último valor de la cabeza o cola del tablero que se busca en la lista de fichas 
+% C: lista anterior
+% PF: argumento de salida, lista de fichas encontradas
 encontrar([[A|B]|F], Val, C, PF):-
 	((A =:= Val; B =:= Val),
 	union(C, [[A|B]], N),
 	encontrar(F, Val, N, PF));
 	encontrar(F, Val, C, PF).
 
-
+% comer(i,i): interfaz para agregar fichas nuevas a las fichas del jugador
+% A: Lista de fichas del jugador
+% L: Número de fichas del jugador 
+% Pregunta si hay fichas para comer
+% Si no hay para comer, cambia de turno al del oponente
+% Lee la la nueva ficha(F)
+% Agrega la ficha a las fichas del jugador (A)
+% elimina la ficha (F) de las fichas que no han salido (fichasOp)
+% Actualiza la cantidad de fichas del jugador 
+% Llama al predicado tirar 
 comer(A, L):-
-	write("¿Qué ficha comiste?"), nl,
+	write("Escribe 1 si hay fichas para comer o 0 si ya se acabaron las fichas"), nl,
+	read(Valor),
+	((Valor =:= 0, write("Vas a pasar"), nl, jugar(0));
+	(write("¿Qué ficha comiste?"), nl, nl,
 	read(F),
 	nb_setval(fichas, [F|A]),
 	nb_getval(fichasOp, Op),
 	eliminar(F, Op, NOp),
 	nb_setval(fichasOp, NOp),
-	write("fichas que no han salido: "), write(NOp), nl, nl,
 	LN is (L + 1),
 	nb_setval(numFichas, LN),
-	tirar().
+	tirar())).
 
-% ponerFicha(i, i, i, o, o): funcion que recibe las fichas de un jugador, el tablero actual, y un tiro, se encarga de:
+% ponerFicha(i, i, i, o, o): predicado que recibe las fichas de un jugador, el tablero actual, y un tiro, se encarga de:
 % - actualizar el tablero con la ficha dada en Tiro llamando a completarTablero(i, i, o)
 % - eliminar el Tiro de las Fichas del jugador en turno llamando a eliminar(i, i, o)
 % - regresa un tablero (NuevoTablero) y un set de fichas (NuevasFichas) actualizados
@@ -181,7 +249,7 @@ completarTablero(Tiro, Tablero, NuevoTablero):-
 
 % acomoda(i, i, i, o): asigna un Tiro al tablero en una cierta posición y devuelve el tablero con la ficha insertada en él
 
-% Caso 1: si se recibe -1, se acomoda en la cabeza, por lo que la función union(i, i, o) recibe primero la ficha y luego el tablero
+% Caso 1: si se recibe -1, se acomoda en la cabeza, por lo que el predicado union(i, i, o) recibe primero la ficha y luego el tablero
 acomoda(-1, Tiro, Tablero, NuevoTablero):- 
 	union([Tiro], Tablero, NuevoTablero).
 
@@ -189,7 +257,7 @@ acomoda(-1, Tiro, Tablero, NuevoTablero):-
 acomoda(1, Tiro, Tablero, NuevoTablero):- 
 	union(Tablero, [Tiro], NuevoTablero). 
 
-% podaALfaBeta(i,i,i,i,i,i,i,i,o,o): funcion que recibe el estado de un juego de domino (tablero, fichas del jugador, fichas del oponente) y utiliza
+% podaALfaBeta(i,i,i,i,i,i,i,i,o,o): predicado que recibe el estado de un juego de domino (tablero, fichas del jugador, fichas del oponente) y utiliza
 % el algoritmo minimax con poda alfa beta para determinar el mejor tiro posible
 
 % Caso de corte 1: la lista de fichas del jugador está vacía, por lo que este camino termina en una victoria
@@ -252,7 +320,7 @@ movimiento(MaxMin, [Tiro | Restantes], Tablero, FichasOcultas, MisFichas, Buscar
 	cambioJugador(MaxMin, OtroMaxMin),
 	asignarNuevasFichas(Tiro, Restantes, OtroMaxMin, NuevoTablero, Profundidad, FichasOcultas, MisFichas, NuevasFichas, Alfa, Beta, Record, MejorTiro, _), !.
 
-% asignarNuevasFichas(i,i,i,i,i,i,i,i,i,i,i,i,i): tiene la función de determinar que jugador debe recibir sus fichas de manera actualizada,
+% asignarNuevasFichas(i,i,i,i,i,i,i,i,i,i,i,i,i): tiene el predicado de determinar que jugador debe recibir sus fichas de manera actualizada,
 % además, va cambiando las fichas usadas para buscar los posibles tiros
 
 % Caso 1: se recibe un 1, por lo que se viene del turno del jugador oponente, entonces se llama podaAlfaBeta con las fichas del oponentes como
@@ -269,7 +337,7 @@ asignarNuevasFichas(Tiro, Restantes, -1, Tablero, Profundidad, FichasOcultas, _,
 	Valor1 is -Valor,
 	poda(-1, Tiro, Valor1, Profundidad, Alfa, Beta, Restantes, Tablero, FichasOcultas, NuevasFichas, FichasOcultas, Record, MejorTiro).
 
-% poda(i, i, i, i, i, i, i, i, i, i, i, i, o): función que se encargar de verificar los valores actuales asignados a las ramas y con base en
+% poda(i, i, i, i, i, i, i, i, i, i, i, i, o): predicado que se encargar de verificar los valores actuales asignados a las ramas y con base en
 % condiciones actualiza los valores de alfa y beta, hace la poda de ciertas ramas innecesarias y continua la búsqueda con tiros y records}
 % provisionales
 %  - MejorTiro o (Tiro, Valor): se encuentran en conjunto, ya que cada tiro tiene un valor específico que debe ser comparado a lo largo de la
@@ -296,7 +364,13 @@ poda(MaxMin, _, Valor, Profundidad, Alfa, Beta, Restantes, Tablero, FichasOculta
 cambioJugador(1, -1).
 cambioJugador(-1, 1).
 
-
+% eliminar(i, i, o): predicado auxiliar para listas
+% F: Elemento que se quiere eliminar
+% L1: Lista de la que se elimina el elemento (F)
+% L: argumento de salida, Lista actualizada sin el elemento (F)
+% Elimina la ficha (F) de la lista (L1) 
+% Elimina la ficha si está de la forma [A,B] o [B,A] 
+% Llama al predicado delete(i, i, o) de la biblioteca library(lists)
 eliminar(F, L1, L):-
 	(cabeza(F, A),
 	last(F, B),
@@ -304,6 +378,11 @@ eliminar(F, L1, L):-
 	delete(L1, [B,A], L),!);
 	delete(L1, F ,L).
 
+% eliminarLista(i, i, o): predicado auxiliar para listas
+% [H|T]: Lista que se quiere eliminar
+% L: Lista de la que se elimina la lista ([H|T])
+% NL: Lista actulaizada sin la lista ([H|T])
+% Para cada elemento de lista [H|T] llama al predicado eliminar(i, i, o) 
 eliminarLista([H|T], L, NL):-
 	eliminar(H, L, L3),
 	eliminarLista(T, L3, NL).
