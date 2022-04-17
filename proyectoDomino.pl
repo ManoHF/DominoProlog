@@ -20,17 +20,15 @@ main:-
 
 primerTiro(1, T):-
 	write("Ingresa la ficha que tiró el oponente: "), nl,
-	read([HF|F]),
-	last(F, TF),
-	nb_setval(tablero, [[HF,TF], [TF,HF]]),
+	read(F),
+	nb_setval(tablero, [F,F]),
 	nb_setval(numFichasOp, 6),
 	T is 1.
 
 primerTiro(0, T):-
 	write("Ingresa la ficha que tiraste: "), nl,
-	read([HF|F]),
-	last(F, TF),
-	nb_setval(tablero, [[HF,TF], [TF,HF]]),
+	read(F),
+	nb_setval(tablero, [F,F]),
 	nb_setval(numFichasOp, 6),
 	T is 0.
 
@@ -41,7 +39,9 @@ buscar(X, [_|Z]):-
 	buscar(X, Z).	
 
 jugar(1):-
-	nb_getval(tablero, Tab),
+	nb_getval(numFichas, Num),
+	((Num < 1, write("GANASTE!!!!!!!! :)"), nl, !);
+	(nb_getval(tablero, Tab),
 	write("el tablero se ve así: "), nl,
 	write("-----------------------------------------"),nl,
 	write("|"), write(Tab), write("|"), nl,
@@ -52,10 +52,12 @@ jugar(1):-
 	nl, write("Primera y ultima ficha del tablero: "), write([A, C]), nl,
 	write("Tus fichas: "), write(Fichas), nl,
 	tirar(), nl,
-	jugar(0).
+	jugar(0))).
 
 jugar(0):-
-	nb_getval(tablero, Tab),
+	nb_getval(numFichasOp, Num),
+	((Num < 1, write("GANÓ EL OPONENTE!!!!!!!! :("), nl, !);
+	(nb_getval(tablero, Tab),
 	write("el tablero se ve así: "), nl,
 	write("-----------------------------------------"),nl,
 	write("|"), write(Tab), write("|"), nl,
@@ -65,7 +67,7 @@ jugar(0):-
 	write("Escribe -1 si el oponente tiró en la cabeza, 0 si pasó, o 1 si tiró en la cola"), nl,
 	read(U),
 	oponenteTiro(N, U), nl,
-	jugar(1).
+	jugar(1))).
 
 oponenteTiro(N, 0):-
 	nb_getval(numFichasOp, M),
@@ -123,9 +125,9 @@ tirar:-
 	 	cabeza(PF, F), eliminar(F, Fichas, NuevasFichas), nb_setval(fichas, NuevasFichas), acomodar(2, F));
 	(write("Posibles tiros: "), write(PF), nl,
 		nb_getval(tablero, Tablero),
-		nb_getval(numFichas, Num),
-		nb_getval(numFichasOp, NumOp),
-		Profundidad is Num + NumOp,
+		% nb_getval(numFichas, Num),
+		% nb_getval(numFichasOp, NumOp),
+		% Profundidad is Num + NumOp,
 		nb_getval(fichasOp, FichasOp),
 		podaAlfaBeta(Tablero, 2, FichasOp, Fichas, Fichas, 1, -10000,  10000, MejorTiro, Valor), 
 		write("Valor de la rama: "), write(Valor), nl,
