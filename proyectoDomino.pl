@@ -1,4 +1,5 @@
 
+% ----------------------------------------------------- INTERFAZ DE JUEGO ------------------------------------------------------------------------------------
 % main: interfaz de inicio de juego
 
 % Inicializa el tablero en vacío
@@ -185,20 +186,6 @@ tirar:-
 		acomodar(2, MejorTiro),!
 		)).
 
-% encontrar(i, i, i, o): Encuentra la lista de fichas que coinciden con el valor en la cabeza o cola del tablero (Val)
-
-% Caso base: cuando la lisat está vacía hace un corte
-encontrar([], _, PF, PF):- !.
-
-% [[A|B]|F]: lista de fichas del jugador
-% Val: último valor de la cabeza o cola del tablero que se busca en la lista de fichas 
-% C: lista anterior
-% PF: argumento de salida, lista de fichas encontradas
-encontrar([[A|B]|F], Val, C, PF):-
-	((A =:= Val; B =:= Val),
-	union(C, [[A|B]], N),
-	encontrar(F, Val, N, PF));
-	encontrar(F, Val, C, PF).
 
 % comer(i,i): interfaz para agregar fichas nuevas a las fichas del jugador
 % A: Lista de fichas del jugador
@@ -223,6 +210,8 @@ comer(A, L):-
 	LN is (L + 1),
 	nb_setval(numFichas, LN),
 	tirar())).
+
+% ----------------------------------------------------- MINIMAX Y FUNCIÓN HEURÍSTICA ------------------------------------------------------------------------------------
 
 % ponerFicha(i, i, i, o, o): predicado que recibe las fichas de un jugador, el tablero actual, y un tiro, se encarga de:
 % - actualizar el tablero con la ficha dada en Tiro llamando a completarTablero(i, i, o)
@@ -364,6 +353,23 @@ poda(MaxMin, _, Valor, Profundidad, Alfa, Beta, Restantes, Tablero, FichasOculta
 cambioJugador(1, -1).
 cambioJugador(-1, 1).
 
+% ----------------------------------------------------- FUNCIONES AUXILIARES ------------------------------------------------------------------------------------
+
+% encontrar(i, i, i, o): predicado auxiliar para listas
+% Encuentra la lista de fichas que coinciden con el valor en la cabeza o cola del tablero (Val)
+
+% Caso base: cuando la lista está vacía hace un corte
+encontrar([], _, PF, PF):- !.
+% [[A|B]|F]: lista de fichas del jugador
+% Val: último valor de la cabeza o cola del tablero que se busca en la lista de fichas 
+% C: lista anterior
+% PF: argumento de salida, lista de fichas encontradas
+encontrar([[A|B]|F], Val, C, PF):-
+	((A =:= Val; B =:= Val),
+	union(C, [[A|B]], N),
+	encontrar(F, Val, N, PF));
+	encontrar(F, Val, C, PF).
+
 % eliminar(i, i, o): predicado auxiliar para listas
 % F: Elemento que se quiere eliminar
 % L1: Lista de la que se elimina el elemento (F)
@@ -390,3 +396,4 @@ eliminarLista([], L, L):- !.
 
 % cabeza(i,o): recibe una lista de la cual saca su cabeza y la devuelve como resultado
 cabeza([A|_], A).
+
