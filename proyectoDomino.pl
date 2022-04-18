@@ -289,8 +289,7 @@ podaAlfaBeta(_, 0, FichasOcultas, MisFichas, _, _, _, _, _, Valor):-
 % obtiene el número de fichas sobrantes del jugador en negativo y lo asigna como valor del tiro
 podaAlfaBeta(_, _, [], MisFichas, _, _, _, _, _, Valor):-
 	length(MisFichas, N2),
-	write("Perdiste"), nl,
-	Valor is -N2, write(Valor), nl, !.
+	Valor is -N2, !.
 
 % Recibe distintos parámetros 
 % - el estado actual del tablero, una profundidad delimitada por el usuario, 
