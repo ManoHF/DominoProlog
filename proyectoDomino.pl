@@ -414,7 +414,6 @@ eliminarLista([], L, L):- !.
 % cabeza(i,o): recibe una lista de la cual saca su cabeza y la devuelve como resultado
 cabeza([A|_], A).
 
-% impresión de guiones para el tablero
 imprimirLinea(0):- !.
 imprimirLinea(N):-
 	write("-----"),
